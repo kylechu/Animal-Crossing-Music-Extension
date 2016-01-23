@@ -12,6 +12,23 @@ function AudioManager(addEventListener, isTownTune) {
 	function playHourlyMusic(hour, game, isHourChange) {
 		audio.loop = true;
 		audio.removeEventListener("ended", playKKSong);
+		if (game == 'mix-all') {
+			// Randomize game
+			var rand = Math.floor(Math.random()*6);
+			console.log(rand);
+			if (rand == 0)
+				game = 'animal-forrest';
+			else if (rand == 1)
+				game = 'city-folk-snowing';
+			else if (rand == 2)
+				game = 'new-leaf';
+			else if (rand == 3)
+				game = 'new-leaf-snowing';
+			else if (rand == 4)
+				game = 'new-leaf-raining';
+			else if (rand == 5)
+				game = 'wild-world';
+		}
 		var fadeOutLength = isHourChange ? 3000 : 500;
 		fadeOutAudio(fadeOutLength, function() {
 			if (isHourChange && isTownTune()) {

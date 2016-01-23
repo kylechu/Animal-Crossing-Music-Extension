@@ -27,6 +27,9 @@ function saveOptions() {
 	else if (document.getElementById('new-leaf-raining').checked) {
 		music = 'new-leaf-raining';
 	}
+	else if (document.getElementById('mix-all').checked) {
+		music = 'mix-all';
+	}
 
 	var icon;
 	if (document.getElementById('kk-icon').checked) {
@@ -77,6 +80,7 @@ document.getElementById('wild-world-snowing').onclick = saveOptions;
 document.getElementById('new-leaf').onclick = saveOptions;
 document.getElementById('new-leaf-snowing').onclick = saveOptions;
 document.getElementById('new-leaf-raining').onclick = saveOptions;
+document.getElementById('mix-all').onclick = saveOptions;
 document.getElementById('no-kk').onclick = saveOptions;
 document.getElementById('enable-kk').onclick = saveOptions;
 document.getElementById('always-kk').onclick = saveOptions;
