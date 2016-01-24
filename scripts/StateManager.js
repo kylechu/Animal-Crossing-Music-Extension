@@ -46,7 +46,7 @@ function StateManager() {
 	}
 
 	function isKK() {
-		return options.alwaysKK || (options.enableKK && isKKTime);
+		return options.alwaysKK || (options.enableKK && isKKTime)  || (options.enableKK && isHoliday());
 	}
 
 	// retrieve saved options
