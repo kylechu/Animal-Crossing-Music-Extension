@@ -6,10 +6,9 @@ function saveOptions() {
 	// 2 separate KK variables to preserve compatibility with old versions
 	var alwaysKK = document.getElementById('always-kk').checked;
 	var enableKK = alwaysKK || document.getElementById('enable-kk').checked;
-  var enableTownTune = document.getElementById('enable-town-tune').checked;
+  	var enableTownTune = document.getElementById('enable-town-tune').checked;
 
-
-	var music;	
+	var music;
 	if (document.getElementById('animal-forrest').checked) {
 		music = 'animal-forrest';
 	}
@@ -28,14 +27,28 @@ function saveOptions() {
 	else if (document.getElementById('new-leaf-raining').checked) {
 		music = 'new-leaf-raining';
 	}
-	
+	else if (document.getElementById('mix-all').checked) {
+		music = 'mix-all';
+	}
+
+	var icon;
+	if (document.getElementById('kk-icon').checked) {
+		chrome.browserAction.setIcon({path: 'img/icon_32.png'});
+		icon = 'kk-icon';
+	}
+	else if (document.getElementById('leaf-icon').checked) {
+		chrome.browserAction.setIcon({path: 'img/icon_leaf_32.png'});
+		icon = 'leaf-icon';
+	}
+
 	chrome.storage.sync.set({
 		volume: volume,
 		music: music,
 		enableNotifications: enableNotifications,
 		enableKK: enableKK,
 		alwaysKK: alwaysKK,
-		enableTownTune: enableTownTune
+		enableTownTune: enableTownTune,
+		icon: icon
 	}, function() { });
 }
 
@@ -46,7 +59,8 @@ function restoreOptions() {
 		enableNotifications: true,
 		enableKK: true,
 		alwaysKK: false,
-		enableTownTune: true
+		enableTownTune: true,
+		icon: 'kk-icon'
 	}, function(items) {
 		document.getElementById('volume').value = items.volume;
 		document.getElementById(items.music).checked = true;
@@ -55,6 +69,7 @@ function restoreOptions() {
 		document.getElementById('enable-kk').checked = items.enableKK;
 		document.getElementById('always-kk').checked = items.alwaysKK;
 		document.getElementById('enable-town-tune').checked = items.enableTownTune;
+		document.getElementById(items.icon).checked = true;
 	});
 }
 
@@ -67,11 +82,14 @@ document.getElementById('wild-world-snowing').onclick = saveOptions;
 document.getElementById('new-leaf').onclick = saveOptions;
 document.getElementById('new-leaf-snowing').onclick = saveOptions;
 document.getElementById('new-leaf-raining').onclick = saveOptions;
+document.getElementById('mix-all').onclick = saveOptions;
 document.getElementById('no-kk').onclick = saveOptions;
 document.getElementById('enable-kk').onclick = saveOptions;
 document.getElementById('always-kk').onclick = saveOptions;
 document.getElementById('enable-notifications').onclick = saveOptions;
 document.getElementById('enable-town-tune').onclick = saveOptions;
+document.getElementById('kk-icon').onclick = saveOptions;
+document.getElementById('leaf-icon').onclick = saveOptions; 
 
 // About/Help
 document.getElementById('get-help').onclick = function() {
