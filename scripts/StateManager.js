@@ -29,25 +29,7 @@ function StateManager() {
 			if (isKK()) {
 				notifyListeners("kkStart");
 			} else {
-				var game = options.music;
-				if (options.music == 'mix-all') {
-					// Randomize game
-					var rand = Math.floor(Math.random()*6);
-					if (rand == 0)
-						game = 'animal-forrest';
-					else if (rand == 1)
-						game = 'city-folk-snowing';
-					else if (rand == 2)
-						game = 'new-leaf';
-					else if (rand == 3)
-						game = 'new-leaf-snowing';
-					else if (rand == 4)
-						game = 'new-leaf-raining';
-					else if (rand == 5)
-						game = 'wild-world';
-				}
-				console.log("Playing from: " + game);
-				notifyListeners("hourMusic", [timeKeeper.getHour(), game, false]);
+				startHourMusic();
 			}
 		});
 	};
@@ -61,6 +43,28 @@ function StateManager() {
 				callbackArr[i].apply(window, args);
 			}
 		}
+	}
+
+	function startHourMusic() {
+		var game = options.music;
+		if (options.music == 'mix-all') {
+			// Randomize game
+			var rand = Math.floor(Math.random()*6);
+			if (rand == 0)
+				game = 'animal-forrest';
+			else if (rand == 1)
+				game = 'city-folk-snowing';
+			else if (rand == 2)
+				game = 'new-leaf';
+			else if (rand == 3)
+				game = 'new-leaf-snowing';
+			else if (rand == 4)
+				game = 'new-leaf-raining';
+			else if (rand == 5)
+				game = 'wild-world';
+		}
+		console.log("Playing from: " + game);
+		notifyListeners("hourMusic", [timeKeeper.getHour(), game, false]);
 	}
 
 	function isKK() {
@@ -93,7 +97,7 @@ function StateManager() {
 		if (isKK() && !wasKK) {
 			notifyListeners("kkStart");
 		} else if (!isKK()) {
-			notifyListeners("hourMusic", [hour, options.music, true]);
+			startHourMusic();
 		}
 	});
 
@@ -112,7 +116,7 @@ function StateManager() {
 				notifyListeners("kkStart");
 			}
 			if (!isKK() && wasKK) {
-				notifyListeners("hourMusic", [timeKeeper.getHour(), options.music]);
+				startHourMusic();
 			}
 		});
 	});
