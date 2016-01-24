@@ -33,12 +33,14 @@ function saveOptions() {
 
 	var icon;
 	if (document.getElementById('kk-icon').checked) {
+		chrome.browserAction.setIcon({path: 'img/icon_32.png'});
 		icon = 'kk-icon';
 	}
 	else if (document.getElementById('leaf-icon').checked) {
+		chrome.browserAction.setIcon({path: 'img/icon_leaf_32.png'});
 		icon = 'leaf-icon';
 	}
-	
+
 	chrome.storage.sync.set({
 		volume: volume,
 		music: music,
@@ -86,14 +88,8 @@ document.getElementById('enable-kk').onclick = saveOptions;
 document.getElementById('always-kk').onclick = saveOptions;
 document.getElementById('enable-notifications').onclick = saveOptions;
 document.getElementById('enable-town-tune').onclick = saveOptions;
-document.getElementById('kk-icon').onclick = function() {
-	chrome.browserAction.setIcon({path: 'img/icon_32.png'})
-	saveOptions();
-}
-document.getElementById('leaf-icon').onclick = function() {
-	chrome.browserAction.setIcon({path: 'img/icon_leaf_32.png'})
-	saveOptions();
-}
+document.getElementById('kk-icon').onclick = saveOptions;
+document.getElementById('leaf-icon').onclick = saveOptions; 
 
 // About/Help
 document.getElementById('get-help').onclick = function() {
