@@ -33,15 +33,8 @@ function AudioManager(addEventListener, isTownTune) {
 	}
 
 	function playKKSong() {
-		if (isHoliday()) {
-			var date = new Date();
-			var today = date.getMonth() + '/' + date.getDate();
-			audio.src = '../kk/' + getHolidays()[today] + '.ogg';
-		}
-		else {
-			var randomSong = Math.floor((Math.random() * 36) + 1).toString();
-			audio.src = '../kk/' + randomSong + '.ogg';
-		}
+		var randomSong = Math.floor((Math.random() * 36) + 1).toString();
+		audio.src = '../kk/' + randomSong + '.ogg';
 		audio.play();
 	}
 
