@@ -26,12 +26,24 @@ function StateManager() {
 	this.activate = function() {
 		isKKTime = timeKeeper.getDay() == 6 && timeKeeper.getHour() >= 20;
 		getSyncedOptions(function() {
+			// If this is the initial activation, set up weatherManager
+			if(!weatherManager) {
+				weatherManager = new WeatherManager(options.zipCode, options.countryCode);
+				weatherManager.registerChangeCallback(function() {
+					if(!isKK() && options.music == 'new-leaf-live') {
+						notifyListeners("gameChange", [timeKeeper.getHour(), getMusic()]);
+						notifyListeners("weatherChange", [weatherManager.getWeather()]);
+					}
+				});
+			}
+
 			notifyListeners("volume", [options.volume]);
 			if (isKK()) {
 				notifyListeners("kkStart");
 			} else {
 				notifyListeners("hourMusic", [timeKeeper.getHour(), getMusic(), false]);
 			}
+
 		});
 	};
 
@@ -71,6 +83,8 @@ function StateManager() {
 		});
 	}
 
+	// Gets the current game based on the option, and weather if
+	// we're using a live weather option.
 	function getMusic() {
 		if(options.music == 'new-leaf-live') {
 			if(weatherManager.getWeather() == "Rain") {
@@ -134,16 +148,6 @@ function StateManager() {
 					self.activate();
 				}
 			});
-		});
-	});
-
-	getSyncedOptions(function() {
-		weatherManager = new WeatherManager(options.zipCode, options.countryCode);
-		weatherManager.registerChangeCallback(function() {
-			if(!isKK() && options.music == 'new-leaf-live') {
-				notifyListeners("gameChange", [timeKeeper.getHour(), getMusic()]);
-				notifyListeners("weatherChange", [weatherManager.getWeather()]);
-			}
 		});
 	});
 

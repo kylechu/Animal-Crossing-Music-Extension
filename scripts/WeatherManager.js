@@ -12,21 +12,6 @@ function WeatherManager(zip, country) {
 	var weatherRain = ['Thunderstorm', 'Drizzle', 'Rain', 'Mist'];
  	var weatherSnow = ['Snow', 'Fog'];
 
- 	window.testFunc = function(_kyle) {
- 		weather = _kyle;
- 		callback();
- 	}
-
- 	window.whatis = function() {
- 		return weather;
- 	}
-
- 	var self = this;
-
- 	window.getit = function() {
- 		return self.getWeather();
- 	}
-
 	this.registerChangeCallback = function(cb) {
 		callback = cb;
 	};
@@ -51,12 +36,14 @@ function WeatherManager(zip, country) {
 		}
 	};
 
+	// Checks the weather, and restarts the loop
 	function restartCheckLoop() {
 		if(timeout) clearTimeout(timeout);
 		timeout = null;
 		weatherCheckLoop();
 	}
 
+	// Checks the weather every 5 minutes, calls callback if it's changed
 	var weatherCheckLoop = function() {
 		//if appid is not valid nothing will be returned
 	 	var appid = "e7f97bd1900b94491d3263f89cbe28d6";
@@ -82,6 +69,13 @@ function WeatherManager(zip, country) {
 	};
 
 	weatherCheckLoop();
+
+	if(DEBUG_FLAG) {
+ 		window.changeWeather = function(newWeather) {
+ 			weather = newWeather;
+ 			callback();
+ 		}
+ 	}
 
 }
 
