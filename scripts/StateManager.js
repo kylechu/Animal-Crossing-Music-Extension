@@ -11,6 +11,7 @@ function StateManager() {
 	var callbacks = {};
 
 	var timeKeeper = new TimeKeeper();
+	var weatherManager;
 	var isKKTime;
 
 	this.registerCallback = function(event, callback) {
@@ -29,7 +30,7 @@ function StateManager() {
 			if (isKK()) {
 				notifyListeners("kkStart");
 			} else {
-				notifyListeners("hourMusic", [timeKeeper.getHour(), options.music, false]);
+				notifyListeners("hourMusic", [timeKeeper.getHour(), getMusic(), false]);
 			}
 		});
 	};
@@ -59,13 +60,29 @@ function StateManager() {
 			enableKK: true,
 			alwaysKK: false,
 			paused: false,
-			enableTownTune: true
+			enableTownTune: true,
+			countryCode: 'us',
+			zipCode: '98052'
 		}, function(items) {
 			options = items;
 			if (typeof callback === 'function') {
 				callback();
 			}
 		});
+	}
+
+	function getMusic() {
+		if(options.music == 'new-leaf-live') {
+			if(weatherManager.getWeather() == "Rain") {
+				return "new-leaf-raining";
+			} else if(weatherManager.getWeather() == "Snow") {
+				return "new-leaf-snowing";
+			} else {
+				return "new-leaf";
+			}
+		} else {
+			return options.music;
+		}
 	}
 
 	// If we're not playing KK, let listeners know the hour has changed
@@ -76,7 +93,7 @@ function StateManager() {
 		if (isKK() && !wasKK) {
 			notifyListeners("kkStart");
 		} else if (!isKK()) {
-			notifyListeners("hourMusic", [hour, options.music, true]);
+			notifyListeners("hourMusic", [hour, getMusic(), true]);
 		}
 	});
 
@@ -84,18 +101,25 @@ function StateManager() {
 	// of any pertinent changes.
 	chrome.storage.onChanged.addListener(function(changes, namespace) {
 		var wasKK = isKK();
+		var oldMusic = getMusic();
 		getSyncedOptions(function() {
+			if (typeof changes.zipCode !== 'undefined') {
+				weatherManager.setZip(options.zipCode);
+			}
+			if (typeof changes.countryCode !== 'undefined') {
+				weatherManager.setCountry(options.countryCode);
+			}
 			if (typeof changes.volume !== 'undefined') {
 				notifyListeners("volume", [options.volume]);
 			}
-			if (typeof changes.music !== 'undefined' && !isKK()) {
-				notifyListeners("gameChange", [timeKeeper.getHour(), options.music]);
+			if (typeof changes.music !== 'undefined' && !isKK() && getMusic() != oldMusic) {
+				notifyListeners("gameChange", [timeKeeper.getHour(), getMusic()]);
 			}
 			if (isKK() && !wasKK) {
 				notifyListeners("kkStart");
 			}
 			if (!isKK() && wasKK) {
-				notifyListeners("hourMusic", [timeKeeper.getHour(), options.music, false]);
+				notifyListeners("hourMusic", [timeKeeper.getHour(), getMusic(), false]);
 			}
 		});
 	});
@@ -113,12 +137,22 @@ function StateManager() {
 		});
 	});
 
+	getSyncedOptions(function() {
+		weatherManager = new WeatherManager(options.zipCode, options.countryCode);
+		weatherManager.registerChangeCallback(function() {
+			if(!isKK() && options.music == 'new-leaf-live') {
+				notifyListeners("gameChange", [timeKeeper.getHour(), getMusic()]);
+				notifyListeners("weatherChange", [weatherManager.getWeather()]);
+			}
+		});
+	});
+
 	// Gives easy access to the notifyListeners function if
 	// we're debugging.
 	if(DEBUG_FLAG) {
 		window.notify = notifyListeners;
 		window.setTime = function(hour, playTownTune) {
-			notifyListeners("hourMusic", [hour, options.music, playTownTune]);
+			notifyListeners("hourMusic", [hour, getMusic(), playTownTune]);
 		};
 	}
 
