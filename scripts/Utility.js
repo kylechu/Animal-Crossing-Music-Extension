@@ -1,6 +1,8 @@
-// Globally accessable helper functions
+// Globally accessible helper functions
 
 'use strict';
+
+var DEBUG_FLAG = false;
 
 // format text for the badge and for the song URL
 function formatHour(time) {
@@ -17,4 +19,8 @@ function formatHour(time) {
 		return time + 'a';
 	}
 	return (time - 12) + 'p';
+}
+
+function printDebug(message) {
+	if (DEBUG_FLAG) console.log(message);
 }

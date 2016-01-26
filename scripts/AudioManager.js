@@ -5,49 +5,53 @@
 function AudioManager(addEventListener, isTownTune) {
 
 	var audio = document.createElement('audio');
+	var loopTimeout;
 	var townTuneManager = new TownTuneManager();
 
 	// isHourChange is true if it's an actual hour change,
 	// false if we're activating music in the middle of an hour
 	function playHourlyMusic(hour, game, isHourChange) {
+		clearLoop();
 		audio.loop = true;
 		audio.removeEventListener("ended", playKKSong);
 		var fadeOutLength = isHourChange ? 3000 : 500;
 		fadeOutAudio(fadeOutLength, function() {
 			if (isHourChange && isTownTune()) {
 				townTuneManager.playTune(function() {
-					audio.src = getSrc(game, hour);
-					playPause(true);
+					playHourSong(game, hour, false);
 				});
-			}
-			else {
-					audio.src = getSrc(game, hour);
-					playPause(true);
+			} else {
+				playHourSong(game, hour, false);
 			}
 		});
 	}
 
-	// isWeatherChange is true if it's an actual hour change,
-	// false if we're activating music in the middle of an hour
-	function playWeatherMusic(hour, game, weather, isHourChange) {
+	// Plays a song for an hour, setting up loop times if
+	// any exist
+	function playHourSong(game, hour, skipIntro) {
 		audio.loop = true;
-		audio.removeEventListener("ended", playKKSong);
-		var fadeOutLength = isHourChange ? 3000 : 500;
-		fadeOutAudio(fadeOutLength, function() {
-			if (isHourChange && isTownTune()) {
-				townTuneManager.playTune(function() {
-					audio.src = getSrc(game, hour, weather);
-					playPause(true);
-				});
+		audio.src = '../' + game + '/' + formatHour(hour) + 'm.ogg';
+		var loopTime = (loopTimes[game] || {})[hour];
+		// set up loop points if loopTime is set up for this
+		// game and hour
+		if(loopTime) {
+			var delayToLoop = loopTime.end;
+			if(skipIntro) {
+				audio.currentTime = loopTime.start;
+				delayToLoop -= loopTime.start;
 			}
-			else {
-					audio.src = getSrc(game, hour, weather);
-					playPause(true);
+			audio.onplay = function() {
+				loopTimeout = setTimeout(function() {
+					printDebug("looping");
+					playHourSong(game, hour, true);
+				}, delayToLoop * 1000);
 			}
-		});
+		}
+		audio.play();
 	}
-	
+
 	function playKKMusic() {
+		clearLoop();
 		audio.loop = false;
 		audio.addEventListener("ended", playKKSong);
 		fadeOutAudio(500, playKKSong);
@@ -56,7 +60,15 @@ function AudioManager(addEventListener, isTownTune) {
 	function playKKSong() {
 		var randomSong = Math.floor((Math.random() * 36) + 1).toString();
 		audio.src = '../kk/' + randomSong + '.ogg';
-		playPause(true);
+		audio.play();
+	}
+
+	// clears the loop point timeout if one exists
+	function clearLoop() {
+		if(loopTimeout) {
+			audio.onplay = function() {};
+			clearTimeout(loopTimeout);
+		}
 	}
 
 	// Fade out audio and call callback when finished.
@@ -71,51 +83,23 @@ function AudioManager(addEventListener, isTownTune) {
 					audio.volume -= step;
 				} else {
 					clearInterval(fade);
-					playPause(false);
+					audio.pause();
 					audio.volume = oldVolume;
 					if (callback) callback();
 				}
 			}, 100);
 		}
 	}
-	
-	function playPause(play) {
-		if(play) {
-			audio.play();
-		}
-		else {
-			audio.pause();
-		}
-	}
-	function getSrc(game, hour, weather) {
-		var src;
-		if(game == 'new-leaf-live') {		
-			if(weather == "Rain")
-				src = '../new-leaf-raining';
-			else if(weather == "Snow")
-				src =  '../new-leaf-snowing';
-			else
-				src =  '../new-leaf';
-		}
-		else
-			src = '../' + game;
-			
-		src += '/' + formatHour(hour) + 'm.ogg';
-		return src;
-	}
 
 	addEventListener("hourMusic", playHourlyMusic);
-
-	addEventListener("weatherMusic", playWeatherMusic);
 	
 	addEventListener("kkStart", playKKMusic);
 
 	addEventListener("gameChange", playHourlyMusic);
-	
-	addEventListener("weatherChange", playWeatherMusic);
 
 	addEventListener("pause", function() {
-		playPause(false);
+		clearLoop();
+		fadeOutAudio(300);
 	});
 
 	addEventListener("volume", function(newVol) {

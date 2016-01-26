@@ -33,17 +33,14 @@ function saveOptions() {
 	else if (document.getElementById('new-leaf-live').checked) {
 		music = 'new-leaf-live';
 	}
-	else if (document.getElementById('mix-all').checked) {
-		music = 'mix-all';
-	}
 	
 	var icon;
 	if (document.getElementById('kk-icon').checked) {
-		chrome.browserAction.setIcon({path: 'img/icon_32.png'});
+		chrome.browserAction.setIcon({path: 'img/icon_38_kk.png'});
 		icon = 'kk-icon';
 	}
 	else if (document.getElementById('leaf-icon').checked) {
-		chrome.browserAction.setIcon({path: 'img/icon_leaf_32.png'});
+		chrome.browserAction.setIcon({path: 'img/icon_38_leaf.png'});
 		icon = 'leaf-icon';
 	}
 
@@ -72,7 +69,7 @@ function restoreOptions() {
 		zipCode: "98052",
 		countryCode: "us",
 		enableBadgeText: true,
-		icon: 'leaf-icon'
+		icon: 'kk-icon'
 	}, function(items) {
 		document.getElementById('volume').value = items.volume;
 		document.getElementById(items.music).checked = true;
@@ -98,7 +95,6 @@ document.getElementById('new-leaf').onclick = saveOptions;
 document.getElementById('new-leaf-snowing').onclick = saveOptions;
 document.getElementById('new-leaf-raining').onclick = saveOptions;
 document.getElementById('new-leaf-live').onclick = saveOptions;
-document.getElementById('mix-all').onclick = saveOptions;
 document.getElementById('no-kk').onclick = saveOptions;
 document.getElementById('enable-kk').onclick = saveOptions;
 document.getElementById('always-kk').onclick = saveOptions;

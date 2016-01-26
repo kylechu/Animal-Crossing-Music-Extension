@@ -72,9 +72,8 @@ input[type="range"]#volume{
     -webkit-appearance: none;
 	width: 129px;
 	height: 3px;
-    background-color: #e3ddd8; 
+    background-color: #595959; 
 }
-
 
 input[type="range"].pitch-slider{
     -webkit-appearance: none;
@@ -82,7 +81,7 @@ input[type="range"].pitch-slider{
 	margin: 40px -20px;
 	width: 75px;
 	height: 3px;
-    background-color: #e3ddd8; 
+    background-color: #595959; 
 }
 
 input[type="range"]::-webkit-slider-thumb {
