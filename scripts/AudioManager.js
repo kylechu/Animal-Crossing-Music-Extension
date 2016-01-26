@@ -16,16 +16,37 @@ function AudioManager(addEventListener, isTownTune) {
 		fadeOutAudio(fadeOutLength, function() {
 			if (isHourChange && isTownTune()) {
 				townTuneManager.playTune(function() {
-					audio.src = '../' + game + '/' + formatHour(hour) + 'm.ogg';
-					audio.play();
+					audio.src = getSrc(game, hour);
+					playPause(true);
 				});
-			} else {
-				audio.src = '../' + game + '/' + formatHour(hour) + 'm.ogg';
-				audio.play();
+			}
+			else {
+					audio.src = getSrc(game, hour);
+					playPause(true);
 			}
 		});
 	}
 
+	// isWeatherChange is true if it's an actual hour change,
+	// false if we're activating music in the middle of an hour
+	function playWeatherMusic(hour, game, weather, isHourChange) {
+		audio.loop = true;
+		audio.removeEventListener("ended", playKKSong);
+		var fadeOutLength = isHourChange ? 3000 : 500;
+		fadeOutAudio(fadeOutLength, function() {
+			if (isHourChange && isTownTune()) {
+				townTuneManager.playTune(function() {
+					audio.src = getSrc(game, hour, weather);
+					playPause(true);
+				});
+			}
+			else {
+					audio.src = getSrc(game, hour, weather);
+					playPause(true);
+			}
+		});
+	}
+	
 	function playKKMusic() {
 		audio.loop = false;
 		audio.addEventListener("ended", playKKSong);
@@ -35,7 +56,7 @@ function AudioManager(addEventListener, isTownTune) {
 	function playKKSong() {
 		var randomSong = Math.floor((Math.random() * 36) + 1).toString();
 		audio.src = '../kk/' + randomSong + '.ogg';
-		audio.play();
+		playPause(true);
 	}
 
 	// Fade out audio and call callback when finished.
@@ -50,22 +71,51 @@ function AudioManager(addEventListener, isTownTune) {
 					audio.volume -= step;
 				} else {
 					clearInterval(fade);
-					audio.pause();
+					playPause(false);
 					audio.volume = oldVolume;
 					if (callback) callback();
 				}
 			}, 100);
 		}
 	}
+	
+	function playPause(play) {
+		if(play) {
+			audio.play();
+		}
+		else {
+			audio.pause();
+		}
+	}
+	function getSrc(game, hour, weather) {
+		var src;
+		if(game == 'new-leaf-live') {		
+			if(weather == "Rain")
+				src = '../new-leaf-raining';
+			else if(weather == "Snow")
+				src =  '../new-leaf-snowing';
+			else
+				src =  '../new-leaf';
+		}
+		else
+			src = '../' + game;
+			
+		src += '/' + formatHour(hour) + 'm.ogg';
+		return src;
+	}
 
 	addEventListener("hourMusic", playHourlyMusic);
 
+	addEventListener("weatherMusic", playWeatherMusic);
+	
 	addEventListener("kkStart", playKKMusic);
 
 	addEventListener("gameChange", playHourlyMusic);
+	
+	addEventListener("weatherChange", playWeatherMusic);
 
 	addEventListener("pause", function() {
-		audio.pause();
+		playPause(false);
 	});
 
 	addEventListener("volume", function(newVol) {

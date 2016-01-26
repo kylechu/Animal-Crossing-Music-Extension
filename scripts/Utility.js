@@ -18,15 +18,3 @@ function formatHour(time) {
 	}
 	return (time - 12) + 'p';
 }
-
-function getHolidays() {
-	return {};
-}
-
-// check if today is a holiday
-function isHoliday() {
-	var date = new Date();
-	var today = date.getMonth() + '/' + date.getDate();
-	return today in getHolidays();
-}
-

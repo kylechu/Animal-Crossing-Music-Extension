@@ -12,6 +12,23 @@ function NotificationManager(addEventListener, isEnabled) {
 			iconUrl: '../img/clock.png'
 		});
 	}
+	
+	function popWeatherNotification(weather) {
+		var msg;
+		if(weather == "Rain")
+			msg = "It's rainy outside!"
+		else if(weather == "Snow")
+			msg = "It's snowing outiside!"
+		else
+			msg = "The weather is clear!"
+		
+		chrome.notifications.create('animal-crossing-music', {
+			type: 'basic',
+			title: 'Animal Crossing Music',
+			message: msg,
+			iconUrl: '../img/clock.png'
+		});
+	}
 
 	function popKKNotification() {
 		chrome.notifications.create('animal-crossing-music', {
@@ -26,6 +43,12 @@ function NotificationManager(addEventListener, isEnabled) {
 	addEventListener("hourMusic", function(hour) {
 		if (isEnabled()) {
 			popMusicNotification(hour);
+		}
+	});
+	
+	addEventListener("weatherMusic", function(hour, music, weather) {
+		if (isEnabled()) {
+			popWeatherNotification(weather);
 		}
 	});
 

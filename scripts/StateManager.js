@@ -12,6 +12,10 @@ function StateManager() {
 
 	var timeKeeper = new TimeKeeper();
 	var isKKTime;
+	
+	var weatherRain = ['Thunderstorm', 'Drizzle', 'Rain', 'Mist'];
+	var weatherSnow = ['Snow', 'Fog'];
+	var weather = "Clear";
 
 	this.registerCallback = function(event, callback) {
 		callbacks[event] = callbacks[event] || [];
@@ -28,14 +32,33 @@ function StateManager() {
 			notifyListeners("volume", [options.volume]);
 			if (isKK()) {
 				notifyListeners("kkStart");
-			} else {
+			}
+			else if(isLive()) {
+				if(options.music == 'new-leaf-live') {
+					updateWeatherCond(options.zipCode, options.countryCode, function(response) {
+					if(response.cod == 200) {
+						weather = response.weather[0].main;
+						if(weatherRain.indexOf(weather) > -1)
+							weather = "Rain";
+						else if(weatherSnow.indexOf(weather) > -1)
+							weather = "Snow";
+						else
+							weather = "Clear";
+						notifyListeners("weatherMusic", [timeKeeper.getHour(), options.music, weather, false]);
+					}
+					else
+						alert(JSON.stringify(response));
+					});
+				}
+			}
+			else {
 				startHourMusic();
 			}
 		});
 	};
 
 	// Possible events include:
-	// volume, kkStart, hourMusic, gameChange, pause
+	// volume, kkStart, hourMusic, weatherMusic, gameChange, weatherChange, pause
 	function notifyListeners(event, args) {
 		if (!options.paused || event === "pause") {
 			var callbackArr = callbacks[event] || [];
@@ -70,6 +93,10 @@ function StateManager() {
 	function isKK() {
 		return options.alwaysKK || (options.enableKK && isKKTime);
 	}
+	
+	function isLive() {
+		return options.music == 'new-leaf-live';
+	}
 
 	// retrieve saved options
 	function getSyncedOptions(callback) {
@@ -80,13 +107,36 @@ function StateManager() {
 			enableKK: true,
 			alwaysKK: false,
 			paused: false,
-			enableTownTune: true
+			enableTownTune: true,
+			//enableAutoPause: false,
+			zipCode: "98052",
+			countryCode: "us",
+			enableBadgeText: true
 		}, function(items) {
 			options = items;
 			if (typeof callback === 'function') {
 				callback();
 			}
 		});
+	}
+	
+	// get current weather conditions using openweathermap: http://openweathermap.org/current
+	function updateWeatherCond(zip, country, cb) {
+		//if appid is not valid nothing will be returned
+		var appid = "e7f97bd1900b94491d3263f89cbe28d6";
+		var url = "http://api.openweathermap.org/data/2.5/weather?zip=" + zip + "," + country + "&appid=" + appid;
+
+		var request = new XMLHttpRequest();
+
+		request.onreadystatechange = function() {
+				if(request.readyState == 4 && request.status == 200) {
+					if( typeof cb === 'function' )
+						cb(JSON.parse(request.responseText));
+				}
+			}
+
+		request.open("GET", url, true);
+		request.send();
 	}
 
 	// If we're not playing KK, let listeners know the hour has changed
@@ -96,7 +146,26 @@ function StateManager() {
 		isKKTime = day == 6 && hour >= 20;
 		if (isKK() && !wasKK) {
 			notifyListeners("kkStart");
-		} else if (!isKK()) {
+		}
+		else if(isLive()) {
+			if(options.music == 'new-leaf-live') {
+				updateWeatherCond(options.zipCode, options.countryCode, function(response) {
+				if(response.cod == 200) {
+					weather = response.weather[0].main;
+					if(weatherRain.indexOf(weather) > -1)
+						weather = "Rain";
+					else if(weatherSnow.indexOf(weather) > -1)
+						weather = "Snow";
+					else
+						weather = "Clear";
+					notifyListeners("weatherMusic", [timeKeeper.getHour(), options.music, weather, true]);
+				}
+				else
+					alert(JSON.stringify(response));
+				});
+			}
+		}
+		else if (!isKK()) {
 			startHourMusic();
 		}
 	});
@@ -109,8 +178,11 @@ function StateManager() {
 			if (typeof changes.volume !== 'undefined') {
 				notifyListeners("volume", [options.volume]);
 			}
-			if (typeof changes.music !== 'undefined' && !isKK()) {
+			if (typeof changes.music !== 'undefined' && !isLive() && !isKK()) {
 				notifyListeners("gameChange", [timeKeeper.getHour(), options.music]);
+			}
+			if (!isKK() && isLive() && (typeof changes.music !== 'undefined' || typeof changes.zipCode !== 'undefined' || typeof changes.countryCode !== 'undefined')) {
+				notifyListeners("weatherChange", [timeKeeper.getHour(), options.music, weather]);
 			}
 			if (isKK() && !wasKK) {
 				notifyListeners("kkStart");
